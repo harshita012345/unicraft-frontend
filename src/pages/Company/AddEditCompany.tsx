@@ -2,9 +2,9 @@ import { useNavigate } from 'react-router-dom';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import type { FormikHelpers } from 'formik';
 import * as Yup from 'yup';
-import { addCompany, getCompanies } from '../../api/company';
 import { toast } from 'react-toastify';
 import type { Company } from '../../types';
+import { apiGet, apiPost } from '../../api/axiosInterceptor';
 
 interface CompanyFormValues {
     companyName: string;
@@ -17,13 +17,19 @@ interface CompanyFormValues {
 const AddEditCompany = () => {
     const navigate = useNavigate();
 
-    const fetchCompanies = async () => (await getCompanies()) as Company[];
+    const fetchCompanies = async (): Promise<Company[]> => {
+        const response = await apiGet(`/company/list`);
+        if (response && typeof response === 'object' && 'data' in response) {
+            return response.data as Company[];
+        }
+        return [];
+    };
 
     const validationSchema = Yup.object({
         companyName: Yup.string().required('Company name is required'),
         websiteUrl: Yup.string().url('Enter a valid URL').required('Website is required'),
         email: Yup.string().email('Enter a valid email').required('Email is required'),
-        phone: Yup.string().required('Phone number is required').min(10, 'Phone number min 10 character').max(15, 'Phone number max 15 characters')  ,
+        phone: Yup.string().required('Phone number is required').min(10, 'Phone number min 10 character').max(15, 'Phone number max 15 characters'),
         companyInfo: Yup.string(),
     });
 
@@ -32,13 +38,16 @@ const AddEditCompany = () => {
         { setSubmitting, resetForm }: FormikHelpers<CompanyFormValues>,
     ) => {
         try {
-            await addCompany(values);
-            resetForm();
-            toast.success("Company added!");
-            fetchCompanies();
-            setSubmitting(false);
-            navigate('/');
+            const response: any = await apiPost('/company/create', values);
+            if (response && typeof response !== 'string' && response.statusCode === 200) {
+                toast.success(`${response.message}`, { toastId: 'nodata', autoClose: 2000 });
+                resetForm();
+                fetchCompanies();
+                setSubmitting(false);
+                navigate('/');
+            }
         } catch (error: any) {
+            console.log('error', error)
             toast.error(error.response?.data?.message || "Error adding company");
             setSubmitting(false);
         }

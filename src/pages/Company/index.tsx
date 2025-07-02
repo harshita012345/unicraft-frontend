@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getCompanies } from '../../api/company';
 import type { Company } from '../../types';
+import { apiGet } from '../../api/axiosInterceptor';
 
 const CompanyList = () => {
     const navigate = useNavigate();
@@ -15,7 +15,7 @@ const CompanyList = () => {
     const fetchCompanies = async () => {
         let params = `limit=${10}&page=${page}`;
         if (search) params += `&search=${search}`;
-        const res: any = await getCompanies(params);
+        const res: any = await apiGet(`/company/list${params}`);
         setCompanies(res.data as Company[]);
         setTotal(res.total || 0);
     };

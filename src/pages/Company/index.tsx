@@ -13,7 +13,7 @@ const CompanyList = () => {
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const fetchCompanies = async () => {
-        let params = `limit=${10}&page=${page}`;
+        let params = `?limit=${10}&page=${page}`;
         if (search) params += `&search=${search}`;
         const res: any = await apiGet(`/company/list${params}`);
         setCompanies(res.data as Company[]);

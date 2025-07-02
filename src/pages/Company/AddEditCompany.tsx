@@ -47,7 +47,6 @@ const AddEditCompany = () => {
                 navigate('/');
             }
         } catch (error: any) {
-            console.log('error', error)
             toast.error(error.response?.data?.message || "Error adding company");
             setSubmitting(false);
         }
